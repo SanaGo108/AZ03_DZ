@@ -1,28 +1,36 @@
 import selenium
-import time
-import csv
+
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
+import time
+import csv
 
-
+chrome_options = Options()
 # Инициализация драйвера
-driver = webdriver.Chrome(executable_path='path_to_chromedriver')
+service = Service(ChromeDriverManager().install())
+driver = webdriver.Chrome(service=service, options=chrome_options)
 
 try:
     # Открытие страницы
     driver.get('https://www.divan.ru/category/divany-i-kresla')
+    time.sleep(5)  # Ждать загрузки страницы
 
-    # Ожидание загрузки страницы и наличия объявлений
-    element = wait.until(EC.presence_of_element_located((By.ID, 'element_id')))
-    listings = wait.until(EC.presence_of_all_elements_located((By.XPATH, '//div[@data-name="LinkArea"]')))
+    # Поиск всех объявлений на странице
+    listings = driver.find_elements(By.XPATH, '//div[@.wDTtf"]')
 
-    # Открытие CSV файла для записи
-    with open('prices.csv', mode='w', newline='', encoding='utf-8') as file:
+    for listing in listings:
+        try:
+            # Поиск цены внутри объявления
+            price = listing.find_element(By.XPATH, './/span[@.ui-LD-ZU.KIkOH]')
+            print(price.text)
+        except Exception as e:
+            print(f"Ошибка при получении цены: {e}")
+
+  # Открытие CSV файла для записи
+    with open('divan_prices.csv', mode='w', newline='', encoding='utf-8') as file:
         writer = csv.writer(file)
         writer.writerow(["Price"])  # Запись заголовка
 
@@ -31,7 +39,6 @@ try:
                 # Поиск цены внутри объявления
                 price = listing.find_element(By.XPATH, './/span[@data-mark="MainPrice"]')
                 writer.writerow([price.text])  # Запись цены в CSV файл
-                print(price.text)  # Вывод цены на экран
             except Exception as e:
                 print(f"Ошибка при получении цены: {e}")
 
